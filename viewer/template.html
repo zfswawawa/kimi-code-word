@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'">
+<title>__DOCUMENT_TITLE__ - DOCX预览</title>
+<style>
+:root{color-scheme:light dark;--bg:#25272b;--panel:#17191d;--text:#202124;--muted:#9aa0a6;--border:#45484e;--button:#30343a;--button-text:#f1f3f4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Segoe UI","Microsoft YaHei",sans-serif;color:#f1f3f4}#toolbar{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:8px;min-height:52px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--border);box-shadow:0 2px 8px #0004}#title{flex:1;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}button,.file-button{border:1px solid var(--border);border-radius:5px;background:var(--button);color:var(--button-text);padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap}button:hover,.file-button:hover{background:#41464e}button:disabled{opacity:.45;cursor:default}input[type=file]{display:none}#status{padding:8px 16px;color:var(--muted);font-size:12px}#status:empty{display:none}#viewport{overflow:auto;padding:0 0 24px}#document{transform-origin:top left}#document .docx-wrapper{padding:24px}#document .docx-wrapper>section.docx{margin-bottom:24px;box-shadow:0 2px 12px #0006}#error{display:none;margin:24px;padding:16px;border:1px solid #c5221f;border-radius:6px;background:#c5221f18;color:#ffb4ab;white-space:pre-wrap}.actions{display:flex;gap:6px;align-items:center}#zoom{min-width:48px;text-align:center;color:var(--muted);font-size:12px}@media(max-width:700px){#title{display:none}#toolbar{flex-wrap:wrap}.file-button{display:none}}@media print{body{background:#fff}#toolbar,#status{display:none!important}#viewport{overflow:visible;padding:0}#document{zoom:1!important}#document .docx-wrapper{padding:0;background:#fff}#document .docx-wrapper>section.docx{box-shadow:none;margin:0;break-after:page}}
+</style>
+<script>/*__JSZIP__*/</script>
+<script>/*__DOCX_PREVIEW__*/</script>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [["$", "$"], ["\\(", "\\)"]],
+    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+    processEscapes: true
+  },
+  svg: { fontCache: "global" },
+  options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+};
+</script>
+<script>/*__MATHJAX__*/</script>
+</head>
+<body>
+<div id="toolbar">
+  <span id="title">__DOCUMENT_TITLE__</span>
+  <div class="actions">
+    <button id="zoomOut" type="button" title="缩小">−</button>
+    <span id="zoom">100%</span>
+    <button id="zoomIn" type="button" title="放大">+</button>
+    <button id="fit" type="button">适合宽度</button>
+    <button id="print" type="button">打印</button>
+    <label class="file-button" for="file">打开DOCX</label>
+    <input id="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+  </div>
+</div>
+<div id="status">正在解析文档…</div>
+<div id="error" role="alert"></div>
+<main id="viewport"><div id="document"></div></main>
+<script>
+(() => {
+  const embedded = "__DOCX_BASE64__";
+  let zoom = 1;
+  const container = document.getElementById("document");
+  const status = document.getElementById("status");
+  const error = document.getElementById("error");
+  const setZoom = value => {
+    zoom = Math.min(2.5, Math.max(0.35, value));
+    container.style.zoom = String(zoom);
+    document.getElementById("zoom").textContent = `${Math.round(zoom * 100)}%`;
+  };
+  const showError = reason => {
+    status.textContent = "";
+    error.style.display = "block";
+    error.textContent = `无法预览文档：${reason instanceof Error ? reason.message : String(reason)}`;
+  };
+  const render = async data => {
+    error.style.display = "none";
+    container.replaceChildren();
+    status.textContent = "正在解析文档…";
+    await docx.renderAsync(data, container, null, {
+      className: "docx",
+      inWrapper: true,
+      ignoreWidth: false,
+      ignoreHeight: true,
+      ignoreFonts: false,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: false,
+      experimental: true,
+      useBase64URL: true,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: true,
+      renderEndnotes: true,
+      renderComments: false,
+      renderAltChunks: false,
+      debug: false
+    });
+    if (window.MathJax?.typesetPromise) await window.MathJax.typesetPromise([container]);
+    status.textContent = "";
+  };
+  document.getElementById("zoomOut").addEventListener("click", () => setZoom(zoom - 0.1));
+  document.getElementById("zoomIn").addEventListener("click", () => setZoom(zoom + 0.1));
+  document.getElementById("fit").addEventListener("click", () => {
+    const page = container.querySelector("section.docx");
+    if (!page) return;
+    const available = document.getElementById("viewport").clientWidth - 52;
+    setZoom(available / page.getBoundingClientRect().width * zoom);
+  });
+  document.getElementById("print").addEventListener("click", () => window.print());
+  document.getElementById("file").addEventListener("change", async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      if (!file.name.toLowerCase().endsWith(".docx")) throw new Error("请选择DOCX文件");
+      document.getElementById("title").textContent = file.name;
+      document.title = `${file.name} - DOCX预览`;
+      await render(await file.arrayBuffer());
+      setZoom(1);
+    } catch (reason) {
+      showError(reason);
+    }
+  });
+  try {
+    const binary = atob(embedded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    render(bytes).catch(showError);
+  } catch (reason) {
+    showError(reason);
+  }
+})();
+</script>
+</body>
+</html>

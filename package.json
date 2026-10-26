@@ -1,0 +1,15 @@
+{
+  "name": "kimi-docx-preview",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline DOCX preview plugin for Kimi Code",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "docx-preview": "^0.4.1",
+    "jszip": "^3.10.2",
+    "mathjax": "^3.2.2",
+    "zod": "^4.6.7"
+  }
+}

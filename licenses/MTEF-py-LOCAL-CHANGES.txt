@@ -1,0 +1,7 @@
+The vendored MTEF-py parser in python_packages/mtef_py was modified for this plugin.
+
+Local changes:
+- Added conversion for the tmINTEG integral template, including empty integral operators and braced upper limits.
+- Added embTILDE handling and the corresponding AST reorder behavior.
+- The source project is https://github.com/zhengdongjunjun/MTEF-py-FIX
+- The upstream Apache License 2.0 and NOTICE are retained in this directory.

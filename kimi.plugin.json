@@ -1,0 +1,23 @@
+{
+  "name": "kimi-docx-preview",
+  "version": "1.0.0",
+  "description": "Offline DOCX preview in Kimi Code Desktop's built-in browser",
+  "keywords": ["docx", "word", "preview", "offline"],
+  "license": "MIT",
+  "commands": "./commands/",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DOCX Preview",
+    "shortDescription": "在右侧浏览器中离线预览Word文档",
+    "longDescription": "将DOCX嵌入独立HTML并在Kimi Code右侧内置浏览器中预览。支持中文、表格、图片和OMML公式，不修改原文件，不上传文档。"
+  },
+  "mcpServers": {
+    "docx": {
+      "command": "node",
+      "args": ["./bin/server.mjs"],
+      "cwd": "./",
+      "enabledTools": ["render_docx_preview"],
+      "toolTimeoutMs": 120000
+    }
+  }
+}
